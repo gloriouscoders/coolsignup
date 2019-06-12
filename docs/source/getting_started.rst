@@ -41,8 +41,9 @@ A configuration file for `coolsignup` is just a json file that looks like the fo
         "secretKey": "BQRekALJCog0EM69y9Lb45/EYGAh17X82St5XKIbqyRRzBde7UQClN/sLJ",
         "emailCodeLink": "https://auth.mysite.org/code/",
         "mongo": {"host": "localhost", "port": "27017"},
-        "sessionDurationSeconds": 2592000,
-        "codeDurationSeconds": 3600
+        "tokenDurationSeconds": 2592000,
+        "codeDurationSeconds": 3600,
+        "maxTokensPerUser": 5
            
     }
     
@@ -58,9 +59,11 @@ A configuration file for `coolsignup` is just a json file that looks like the fo
 
 ``"mongo"``: the configuration of your connection to MongoDB (defaults to :json:`{"host": "localhost", "port": "27017"}` )
 
-``"sessionDurationSeconds"``: the duration of validity, in seconds, of an authentication token.  Default to 2592000 seconds (that is, 30 days)
+``"tokenDurationSeconds"``: the duration of validity, in seconds, of an authentication token.  Default to 2592000 seconds (that is, 30 days)
 
 ``"codeDurationSeconds"``: the duration of validity, in seconds, of a code sent by email (such as a code to reset a password). Defaults to 3600 seconds.
+
+``"maxTokensPerUser"``: the number of different tokens that you can open for a user and that remain valid at the same time. For example, if you set this to 2, you'll be able to log your user in twice, creating two different authentication tokens (maybe one authentication for use with their web browser, and one authentication token for use on their smartphone). If, then, you log the user in a third time, you'll get a third authentication token, but one of the earlier authentication tokens will be invalidated, so that only 2 tokens remains valid.
 
 
 Starting the server
@@ -82,4 +85,4 @@ For example:
     
 would start the server with configuration file ``/home/berndt/coolsignup.conf`` and serve requests over port 4444.
 
-**It's very important that this port is not open to the public. Only your web application must have access to it. Not the clients directly!**
+**It's very important that this port is not open to the public. Only your web application must have access to it. Not the users directly!**

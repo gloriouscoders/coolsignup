@@ -13,10 +13,7 @@ What is coolsignup?
 Status of the project
 =====================
 
-The documentation of the API was written but there's no implementation yet.
-
-I plan to implement the project but I have other priorities at the moment.
-If you'd like to implement it, or fund its development, submit an issue at https://github.com/gloriouscoders/coolsignup or send me an email.
+For now there's no implementation available but there will be one soon.
 
 Contents:
 
@@ -31,5 +28,5 @@ Contents:
 Github repository
 =================
 
-https://github.com/gloriouscoders/coolsignup
+https://github.com/leforestier/coolsignup
 
