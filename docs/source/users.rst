@@ -15,7 +15,7 @@ How to work with coolsignup
 In this documentation, we use ``curl`` to give examples of how to make requests to the API. ``curl`` is a UNIX utility used to send http requests. Obviously, when  using *coolsignup* in your application, you will use whatever is the preferred way to send http requests in the particular language or framework you're working with.
 
 The requests you make are to be made server side: the web application running on your servers makes the requests to the *coolsignup* server. 
-**The client must not be able to access the coolsignup server directly**.
+**The end user must not be able to access the coolsignup server directly**.
 
 Registering users with an email address and a password
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -68,7 +68,7 @@ For example:
 2. Check the confirmation email link
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Assuming all went well in the preceding the step, your user has received a link looking like this:
+Assuming all went well in the previous step, your user has received a link looking like this:
 
 .. code::
     
@@ -89,13 +89,13 @@ The response will be either:
 
 .. code:: json
 
-    {"isValid": true}
+    {"success": true}
 
 or
 
 .. code:: json
 
-    {"isValid": false, "error": "Invalid registration code."}
+    {"success": false, "error": "Invalid registration code."}
     
 You can add a ``lang`` parameter to the query string to receive the error message in a different language.
     
@@ -121,7 +121,7 @@ The result you get is either:
 
 .. code:: json
 
-    {"success": true, "_id": "6A786549569875"}
+    {"success": true, "_id": "5cfae1ae7be455eeb9580c9c"}
     
 where ``_id`` is the user id of the new user.
     
@@ -144,7 +144,7 @@ So, once you've made all these verifications, you post the ``_id`` of your user 
 
 .. code:: sh
 
-    POST /api/activate-user {"_id": "6A786549569875"}
+    POST /api/activate-user {"_id": "5cfae1ae7be455eeb9580c9c"}
 
 You'll get
 
@@ -161,7 +161,7 @@ or an error such as:
 Login
 ^^^^^
 
-To login your user post to the following url:
+To log your user in, post to the following url:
 
 .. code:: sh
 
@@ -176,7 +176,7 @@ You'll get either something like:
 
     {
         "success": true,
-        "authToken": "2|1:0|10:1530199982...|997e410948ac7717cc7688d"
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz"
     }
 
 or an error:
@@ -185,9 +185,10 @@ or an error:
 
     {"success": "false", "error": "Wrong identifiers"}
 
-The `"authToken"` value is a string that was cryptographically signed using the private key in your ``coolsignup.conf``. This string can be used to identify your user when using the rest of the *coolsignup* api. Typically, in a web app, you would store that sessionToken string in a cookie in the client's browser. In a phone app, you would store it in the local storage.
+The `"authToken"` value is a string that was cryptographically signed using the private key in your ``coolsignup.conf``. This string can be used to identify your user when using the rest of the *coolsignup* api. Typically, in a web app, you would store that authToken string in a cookie in the client's browser. In a phone app, you would store it in the local storage.
 
-On login, you might want to retrieve some fields about your user, for example a screen name, or a favorite color, or any other data stored about this user in MongoDB. In a web app, maybe you could then store that data in a secure cookie on the client side if you want.
+On login, you might want to retrieve the _id of your user. This is a string that uniquely identifies your user. You might also want to retrieve some fields about your user, for example a screen name, or a favorite color.
+
 To retrieve user fields on login, add a ``"fields"`` list of fields to your request. For example:
 
 .. code:: sh
@@ -195,7 +196,7 @@ To retrieve user fields on login, add a ``"fields"`` list of fields to your requ
     curl -X POST /api/email/login -d '{
         "email": "user@example.com",
         "password": "my password is strong as hell",
-        "fields": ["screenName", "favoriteColor"]
+        "fields": ["_id", "screenName", "favoriteColor"]
     }'
     
 You get
@@ -204,8 +205,12 @@ You get
     
     {
         "success": true,
-        "authToken": "2|1:0|10:153019998...688d",
-        "fields" : {"screenName": "Mauricio", "favoriteColor": "orange"}
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz",
+        "user" : {
+            "_id": "5cfae1ae7be455eeb9580c9c",
+            "screenName": "Mauricio",
+            "favoriteColor": "orange"
+        }
     }
 
     
@@ -217,7 +222,7 @@ To logout, post to the following url.
 .. code:: sh
 
     curl -X POST /api/logout
-         -d '{"authToken": "2|1:0|10:153019998...688d"}'
+         -d '{"authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz"}'
 
 This action succeeds even if the ``authToken`` is invalid or was deleted from a previous logout.
 
@@ -234,24 +239,52 @@ Using the user account once logged in
 
 Once logged in, you can use the ``authToken``, to:
 
-retrieve fields about the user
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+retrieve the user id
+~~~~~~~~~~~~~~~~~~~~
 
 .. code:: sh
 
-    curl -X POST /api/get-user-fields -d '{
-        "authToken": "2|1:0|10:153019998...688d",
-        "fields": ["screenName", "_id"]
+    curl -X POST /api/get-user-id -d '{
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz"
     }'
 
 .. code:: json
 
     {
         "success": true,
-        "user": {"screenName": "Mauricio", "_id": "6A786549569875"}
+        "_id": "5cfae1ae7be455eeb9580c9c"
+    }
+    
+You can now use this `_id` to uniquely identify the user in your application.
+You can, for example, query or modify the user account in MongoDB using this `_id`.
+User accounts are stored in MongoDB in the `coolsignup` database, in the `accounts` collection.
+But you're not forced to use MongoDB. You can use this `_id` to feed another database, using, say, MySQL, if you want.
+
+
+retrieve fields about the user
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: sh
+
+    curl -X POST /api/get-user-fields -d '{
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz",
+        "fields": ["screenName", "email", "_id"]
+    }'
+
+.. code:: json
+
+    {
+        "success": true,
+        "user": {
+            "screenName": "Mauricio",
+            "email": "mauricio@example.com",
+            "_id": "5cfae1ae7be455eeb9580c9c"
+        }
     }
     
 Then for example, use the user id to deal with resources owned by your user in your application.
+
+Note: apart from the `"_id"`, `"email"` and `"emailLower"` fields, other fields you can access using `/api/get-user-fields` are stored in the `"fields"` subdocument of the user document in the MongoDB database. This is something you should know if you intend to use MongoDB requests directly.
 
 set a user's fields
 ~~~~~~~~~~~~~~~~~~~
@@ -259,7 +292,7 @@ set a user's fields
 .. code:: sh
 
     curl -X POST /api/set-user-fields -d '{
-        "authToken": "2|1:0|10:153019998...688d",
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz",
         "set": {"screenName": "Pascal", "favoriteColor": "yellow"}
     }'
     
@@ -276,7 +309,9 @@ or
     {"success": false, "error": "invalid authToken"}
 
 
-For more complex modification of a user account, you might want to retrieve the user's ``_id`` and then modify the user using direct requests to the MongoDB backend. Users are stored in the "accounts" collection.
+For more complex modification of a user account, you might want to retrieve the user's ``_id`` and then modify the user using direct requests to the MongoDB backend. Users are stored in the "accounts" collection of the "coolsignup" database.
+
+Note: when using `/api/set-user-fields`, you're not allowed to modify the `"_id"`, `"email"` and `"emailLower"` fields. Also, fields other than `"_id"`, `"email"` and `"emailLower"` that you can access are actually stored in the `"fields"` subdocument of the user document in the MongoDB database. This is something you should know if you intend to use MongoDB requests directly.
 
 
 Password reset
@@ -332,13 +367,13 @@ Hopefully you'll get
 
 .. code:: json
 
-    {"isValid": true}
+    {"success": true}
     
 If the code is not a valid code however, you'll get:
 
 .. code:: json
 
-    {"isValid": false, "error": "Invalid reset password link"}
+    {"success": false, "error": "Invalid reset password link"}
     
 3. Actually reset the password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -379,7 +414,7 @@ The email change is done in three steps:
 .. code:: sh
 
     curl -X POST /api/email/send-change-email-code '{
-        "authToken": "2|1:0|10:153019998...688d",
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz",
         "newEmail": "bobby@example.com"
     }'
 
@@ -403,13 +438,13 @@ If the code is valid, you get:
 
 .. code:: json
 
-    {"isValid": true}
+    {"success": true}
 
 Otherwise:
 
 .. code:: json
 
-    {"isValid": false}
+    {"success": false}
 
 3. Actually change the email of the user
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -417,7 +452,7 @@ Otherwise:
 .. code:: sh
 
     curl -X POST /api/email/change-email '{
-        "authToken": "2|1:0|10:153019998...688d",
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz",
         "changeEmailCode": "Eqtp1kNZeNNmSan2MxOXhLhMuc"
     '}
 
@@ -446,7 +481,7 @@ This action requires a valid `authToken` and the current password.
 .. code:: sh
 
     curl -X POST /api/email/change-password '{
-        "authToken": "2|1:0|10:153019998...688d",
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz",
         "currentPassword": "my current password",
         "newPassword": "my new password"
     }
@@ -490,7 +525,7 @@ If you want to give the opportunity to a user to delete their own account, first
 .. code:: sh
 
     curl -X POST /api/get-user-fields '{
-        "authToken": "2|1:0|10:153019998...688d",
+        "authToken": "bmbfVLnt95S33IY6...MjaPTuZmjdWmpAQ-QA8OStz",
         "fields": ["_id"]
     }"
 
