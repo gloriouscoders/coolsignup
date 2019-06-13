@@ -1,7 +1,11 @@
 from setuptools import setup
+from glob import glob
 
 with open('README.md') as fd:
     long_description = fd.read()
+
+locale_files = [path[len('coolsignup/'):] for path in glob('coolsignup/locale/*/*/*.[mp]o')]
+package_data = {'coolsignup': ['locale/coolsignup.pot'] + locale_files}
 
 setup(
     name='coolsignup',
@@ -18,6 +22,8 @@ setup(
         'postpone>=0.3.0'
     ],
     packages=['coolsignup'],
+    package_data = package_data,
+    include_package_data = True,
     scripts=['bin/coolsignup'],
     author = 'Benjamin Le Forestier',
     author_email = 'benjamin@leforestier.org',

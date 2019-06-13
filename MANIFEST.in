@@ -1,0 +1,2 @@
+include README.md
+recursive-include coolsignup *.py *.pot *.po *.mo
