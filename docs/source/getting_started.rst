@@ -34,11 +34,12 @@ A configuration file for `coolsignup` is just a json file that looks like the fo
             "smtpServer": "smtp.example.com",
             "username": "registration_account",
             "password": "try to hack this, just try",
-            "senderName": "example.com"    
+            "senderName": "example.com",
+            "port": 587    
         },
         "serviceName": "nuclear power plant management board",
         "passwordStrength": 8.5,
-        "secretKey": "BQRekALJCog0EM69y9Lb45/EYGAh17X82St5XKIbqyRRzBde7UQClN/sLJ",
+        "secretKey": "BQRekALJCog0EM69y9Lb45/EY...GAh17X82St5XKIbqyRRzBde7UQClN/sLJ",
         "emailCodeLink": "https://auth.mysite.org/code/",
         "mongo": {"host": "localhost", "port": "27017"},
         "tokenDurationSeconds": 2592000,
