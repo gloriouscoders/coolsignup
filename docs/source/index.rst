@@ -10,10 +10,10 @@ What is coolsignup?
 
 *coolsignup* is completely decoupled from any language or framework: you can implement part of your website in Python, another part in Javascript and yet another component in Java for example, and use the same authentication API for your users.
 
-Status of the project
-=====================
+Tutorial
+========
 
-For now there's no implementation available but there will be one soon.
+Here's a tutorial that will teach you all you need to know about *coolsignup*.
 
 Contents:
 
