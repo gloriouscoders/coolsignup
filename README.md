@@ -1,5 +1,5 @@
 # coolsignup
-REST-like server to register and authenticate users by email
+"REST-like server to register users by email and handle login, logout, authentication, email changes and password reset."
 
 Full documentation:
-https://coolsignup.readthedocs.io/en/latest/
+https://coolsignup.readthedocs.io/
